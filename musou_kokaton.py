@@ -1,4 +1,5 @@
 from ast import Store
+from ast import Store
 import math
 import os
 import random
@@ -410,7 +411,7 @@ def main():
                     score.value -= 200
         screen.blit(bg_img, [0, 0])
 
-        if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
+        if tmr%100 == 0:  # 200フレームに1回，敵機を出現させる
             emys.add(Enemy())
 
         for emy in emys:
@@ -479,3 +480,4 @@ if __name__ == "__main__":
     main()
     pg.quit()
     sys.exit()
+# End
