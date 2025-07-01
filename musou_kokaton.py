@@ -1,3 +1,4 @@
+from ast import Store
 import math
 import os
 import random
@@ -47,7 +48,7 @@ class Bird(pg.sprite.Sprite):
         pg.K_LEFT: (-1, 0),
         pg.K_RIGHT: (+1, 0),
     }
-
+    
     def __init__(self, num: int, xy: tuple[int, int]):
         """
         こうかとん画像Surfaceを生成する
@@ -72,6 +73,8 @@ class Bird(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = xy
         self.speed = 10
+        self.state = "normal"
+        self.hyper_life = 0
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -99,6 +102,11 @@ class Bird(pg.sprite.Sprite):
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.dire = tuple(sum_mv)
             self.image = self.imgs[self.dire]
+        if self.state == "hyper":
+            self.hyper_life-=1
+            self.image = pg.transform.laplacian(self.image)
+            if self.hyper_life < 0:
+                self.state="normal" 
         screen.blit(self.image, self.rect)
 
 
@@ -259,7 +267,7 @@ class Score:
     def __init__(self):
         self.font = pg.font.Font(None, 50)
         self.color = (0, 0, 255)
-        self.value = 2000
+        self.value = 0
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         self.rect = self.image.get_rect()
         self.rect.center = 100, HEIGHT-50
@@ -338,6 +346,11 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN and event.key == pg.K_RSHIFT:
+                if score.value >= 100:
+                    bird.state = "hyper"
+                    bird.hyper_life = 500
+                    score.value -= 100
             if key_lst[pg.K_s] and score.value >= 50 and len(shields) == 0:
                 shields.add(Shield(400,bird))
                 score.value -= 50
@@ -379,6 +392,16 @@ def main():
                 time.sleep(2)
                 return
 
+        for bomb in pg.sprite.spritecollide(bird, bombs, True):  # こうかとんと衝突した爆弾リスト
+            if bird.state == "hyper":
+                score.value += 1
+                exps.add(Explosion(bird, 50))  # 爆発エフェクト
+            else:
+                bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+                score.update(screen)
+                pg.display.update()
+                time.sleep(2)
+                return
 
         if len(gravityg) > 0:#重力場と爆弾・敵機の衝突
             for bomb in pg.sprite.groupcollide(bombs, gravityg, True, False).keys():
