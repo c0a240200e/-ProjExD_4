@@ -284,7 +284,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
-    neobeam = NeoBeam(bird, num=11)
+    neobeam = NeoBeam(bird, num=5)
 
     tmr = 0
     clock = pg.time.Clock()
@@ -345,3 +345,4 @@ if __name__ == "__main__":
     main()
     pg.quit()
     sys.exit()
+# End
