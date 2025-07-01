@@ -141,7 +141,7 @@ class Beam(pg.sprite.Sprite):
     """
     ビームに関するクラス
     """
-    def __init__(self, bird: Bird):
+    def __init__(self, bird: Bird, angle: int = 0):
         """
         ビーム画像Surfaceを生成する
         引数 bird：ビームを放つこうかとん
@@ -149,7 +149,7 @@ class Beam(pg.sprite.Sprite):
         super().__init__()
         self.vx, self.vy = bird.dire
         angle = math.degrees(math.atan2(-self.vy, self.vx))
-        self.image = pg.transform.rotozoom(pg.image.load(f"fig/beam.png"), angle, 1.0)
+        self.image = pg.transform.rotozoom(pg.image.load(f"fig/beam.png"), angle, 1.0) # ビームの回転角度に加算する
         self.vx = math.cos(math.radians(angle))
         self.vy = -math.sin(math.radians(angle))
         self.rect = self.image.get_rect()
@@ -166,6 +166,31 @@ class Beam(pg.sprite.Sprite):
         if check_bound(self.rect) != (True, True):
             self.kill()
 
+
+class NeoBeam(Beam):
+    """
+    弾幕に関するクラス
+    """    
+    def __init__ (self, bird, num):
+        """
+        ビーム画像Surfaceを生成する
+        引数 bird：ビームを放つこうかとん（Birdインスタンス）
+        引数 num：ビーム数
+        """
+        self.bird = bird
+        self.num = num
+
+    def gen_beams(self):
+        """
+        ‐50°～+51°の角度の範囲で指定ビーム数の分だけBeamインスタンスを生成しリストにappendする
+        """
+        beams = []
+        for i in range(self.num):
+            angle = range(-50, +51, 50//self.num)
+            beam = Beam(self.bird, angle[i])
+            beams.append(beam)
+        return beams
+    
 
 class Explosion(pg.sprite.Sprite):
     """
