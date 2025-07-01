@@ -232,7 +232,7 @@ class Score:
     def __init__(self):
         self.font = pg.font.Font(None, 50)
         self.color = (0, 0, 255)
-        self.value = 0
+        self.value = 50000
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         self.rect = self.image.get_rect()
         self.rect.center = 100, HEIGHT-50
@@ -241,6 +241,41 @@ class Score:
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
 
+
+class Shield(pg.sprite.Sprite):
+    def __init__(self, life: int, bird: Bird):
+        super().__init__()
+        self.life = life
+        self.bird = bird
+
+        width = 20
+        height = bird.rect.height * 2
+
+        self.base_image = pg.Surface((width, height), pg.SRCALPHA)
+        self.base_image.fill((0, 0, 255))
+
+        self.image = self.base_image.copy()
+        self.rect = self.image.get_rect()
+        self.update_image_and_position()
+
+    def update_image_and_position(self):
+        vx, vy = self.bird.dire
+        angle = math.degrees(math.atan2(-vy, vx))
+
+        self.image = pg.transform.rotozoom(self.base_image, angle, 1.0)
+
+        self.rect = self.image.get_rect()
+        offset_x = vx * self.bird.rect.width
+        offset_y = vy * self.bird.rect.height
+        self.rect.centerx = self.bird.rect.centerx + offset_x
+        self.rect.centery = self.bird.rect.centery + offset_y
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+        else:
+            self.update_image_and_position()
 
 def main():
     pg.display.set_caption("真！こうかとん無双")
@@ -253,6 +288,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    shields = pg.sprite.Group()
 
     tmr = 0
     clock = pg.time.Clock()
@@ -263,6 +299,11 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if key_lst[pg.K_s] and score.value >= 50 and len(shields) == 0:
+                shields.add(Shield(400,bird))
+                score.value -= 50
+
+
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -288,12 +329,18 @@ def main():
             pg.display.update()
             time.sleep(2)
             return
+        
+        hit_dict = pg.sprite.groupcollide(bombs, shields, True, False)
+        for bomb in hit_dict.keys():
+            pg.sprite.groupcollide(bombs, shields, True, False)
 
         bird.update(key_lst, screen)
         beams.update()
         beams.draw(screen)
         emys.update()
         emys.draw(screen)
+        shields.update()
+        shields.draw(screen)
         bombs.update()
         bombs.draw(screen)
         exps.update()
