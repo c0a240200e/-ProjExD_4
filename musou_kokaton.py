@@ -313,13 +313,14 @@ def main():
             return
 
 
-        if len(gravityg) > 0:
+        if len(gravityg) > 0:#重力場と爆弾・敵機の衝突
             for bomb in pg.sprite.groupcollide(bombs, gravityg, True, False).keys():
                 exps.add(Explosion(bomb, 50))
                 score.value += 1
             for emy in pg.sprite.groupcollide(emys, gravityg, True, False).keys():
                 exps.add(Explosion(emy, 100))
                 score.value += 10
+
 
         gravityg.update()
         gravityg.draw(screen)
